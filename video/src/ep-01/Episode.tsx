@@ -126,7 +126,9 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
             <div style={{ font: `600 72px ${mono}`, color: on(c('01', 3)) ? C.red : C.ink, opacity: pop(c('01', 3)) }}>
               H0+{on(c('01', 6)) ? '39' : on(c('01', 4)) ? '36.75' : '36.70'}s
             </div>
-            <div style={{ opacity: pop(c('01', 5)) }}><Label color={C.red}>{on(c('01', 6)) ? '■ Vehicle breakup' : '■ Same bug · same moment'}</Label></div>
+            <div style={{ opacity: pop(c('01', 3)) }}>
+              <Label color={C.red}>{on(c('01', 6)) ? '■ Vehicle breakup' : on(c('01', 5)) ? '■ Same code · same number' : '■ BH > 32,767 · int16 overflow'}</Label>
+            </div>
           </div>
         </div>
       </Scene>

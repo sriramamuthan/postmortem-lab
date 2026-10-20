@@ -1,7 +1,7 @@
 # EP-01: Ariane 5 (ElevenLabs version)
 
 Generated with `npm run tts -- ../docs/scripts/ep-01-tts.md` in `video/`. Numbers spelled out, names written as they
-sound, pauses as `<break time="…" />`. Every claim traces to `incidents/01-ariane-5/README.md`.
+sound. `<break time="…" />` marks the pause after a line; the generator inserts it as exact silence (tags are not sent). Every claim traces to `incidents/01-ariane-5/README.md`.
 
 ---
 
@@ -10,9 +10,9 @@ sound, pauses as `<break time="…" />`. Every claim traces to `incidents/01-ari
 Two computers. Identical hardware. Identical software. <break time="0.4s" />
 One active, one standing by, so that if one fails, the other takes over. <break time="0.6s" />
 On the fourth of June, nineteen ninety-six, Ariane Five carried both. <break time="0.5s" />
-Thirty-six point seven seconds after ignition, the backup shut itself down. <break time="0.5s" />
-A twentieth of a second later, the active one did the same. <break time="0.6s" />
-Same bug. Same moment. <break time="0.4s" />
+Thirty-six point seven seconds after ignition, the backup hit a number too big for its box, and shut itself down. <break time="0.5s" />
+One cycle later, the active one hit the same number, and did the same. <break time="0.6s" />
+Same code. Same number. Same moment. <break time="0.4s" />
 By thirty-nine seconds, the rocket was coming apart. <break time="1.2s" />
 
 ### 02 · Intro
