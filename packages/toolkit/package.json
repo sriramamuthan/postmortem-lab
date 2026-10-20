@@ -1,0 +1,10 @@
+{
+  "name": "@postmortem-lab/toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Primitives for safely causing failures: checked conversions, fault injection, deterministic time.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

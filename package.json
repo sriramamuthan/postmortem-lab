@@ -1,0 +1,23 @@
+{
+  "name": "postmortem-lab",
+  "private": true,
+  "type": "module",
+  "description": "Famous engineering failures, rebuilt as simulations you can run, break and fix.",
+  "workspaces": [
+    "packages/*",
+    "incidents/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
