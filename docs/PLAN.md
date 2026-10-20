@@ -42,7 +42,7 @@
 
 - [x] Domain `paramlab.dev` registered
 - [x] GitHub repos `postmortem-lab` and `paramlab.dev` pushed
-- [ ] Cloudflare Pages connected to the site repo
+- [x] Site live at https://paramlab.dev (Cloudflare Workers static assets; domains in wrangler.jsonc)
 - [ ] YouTube channel created (name: Post-Mortem Lab, or personal name with Lab as a playlist)
 - [ ] ElevenLabs Creator plan; record about 30 minutes of clean audio for a professional voice clone
 - [ ] Screen Studio installed
