@@ -56,19 +56,31 @@ const Register = ({ t }: { t: number }) => {
   );
 };
 
+/** Screen shake for the moment of breakup. */
+export const coldOpenShake = (t: number) => (t > CUE.breakup + 0.6 && t < CUE.breakup + 1.2 ? Math.sin(t * 90) * 6 : 0);
+
+/** The 45-second cold open as a Short: its own stage and the first 45 s of narration. */
 export const ColdOpen = () => {
+  const t = useCurrentFrame() / useVideoConfig().fps;
+  return (
+    <Stage episode="EP-00" shake={coldOpenShake(t)}>
+      <Audio src={staticFile('audio/ep-00.wav')} endAt={45 * 30} />
+      <ColdOpenScenes />
+    </Stage>
+  );
+};
+
+/** Scenes for 0–45 s; used by the Short and the full episode. */
+export const ColdOpenScenes = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = frame / fps;
-  const shake = t > CUE.breakup + 0.6 && t < CUE.breakup + 1.2 ? Math.sin(t * 90) * 6 : 0;
   const tPlus = Math.min(37, Math.max(0, ((t - CUE.launch) / (CUE.breakup + 0.6 - CUE.launch)) * 37));
   const portrait = usePortrait();
   const pop = (at: number) => spring({ frame: frame - at * fps, fps, config: { damping: 14 } });
 
   return (
-    <Stage episode="EP-00" shake={shake}>
-      <Audio src={staticFile('audio/ep-00.wav')} endAt={45 * 30} />
-
+    <>
       {/* Date and place */}
       <AbsoluteFill style={{ opacity: fade(t, 0, CUE.launch), justifyContent: 'center', padding: portrait ? 48 : 96 }}>
         <Label>Incident file 01</Label>
@@ -106,6 +118,6 @@ export const ColdOpen = () => {
       <AbsoluteFill style={{ opacity: fade(t, CUE.box, 45), justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ zoom: portrait ? 0.66 : 1 }}><Register t={t} /></div>
       </AbsoluteFill>
-    </Stage>
+    </>
   );
 };

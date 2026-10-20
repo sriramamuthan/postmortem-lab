@@ -12,6 +12,9 @@ narration. One set of scenes renders both the 16:9 YouTube version and the 9:16 
 4. Preview with `npm run studio`, then render:
    `npm run render -- ep-01 out/ep-01.mp4` and `npm run render -- ep-01-short out/ep-01-short.mp4`.
 
+Then copy `out/ep-NN.mp4` and a poster still to `paramlab.dev/public/video/` and set `video` and `poster` in the
+post's frontmatter.
+
 Audio files stay out of git (`public/audio/` is ignored); the published narration lives in the paramlab.dev repo.
 
 Shared palette, fonts and building blocks are in `src/kit.tsx`. Fonts: Space Grotesk and JetBrains Mono (SIL Open Font

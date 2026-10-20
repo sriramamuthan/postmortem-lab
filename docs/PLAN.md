@@ -45,6 +45,13 @@ Releasing weekly from a finished season keeps the channel steady while Season 2 
 | 06 | Cloudflare regex | Backtracking regex engine with step counter | Cloudflare post-mortem, July 2019 |
 | 07 | CrowdStrike | Config validation and blast-radius model | CrowdStrike RCA, Aug 2024 |
 
+## Follow-ups
+
+- [ ] **Knight Capital figure.** EP-00 (post, roadmap, audio and video) says $440M; the SEC order says "more than
+  $460 million" ($440M was Knight's own estimate the day after). Decide: keep and attribute to Knight, or re-record.
+- [ ] **Ariane 5 cost.** EP-00 post says "roughly $370 million"; widely quoted but not in the inquiry report. Find a
+  citable source or change to "hundreds of millions" (as the narration already says).
+
 ## Fact-check log
 
 | Claim | Where | Status |
@@ -63,7 +70,7 @@ Releasing weekly from a finished season keeps the channel steady while Season 2 
 - [x] ElevenLabs voice clone
 - [x] Video pipeline: Remotion in `video/` (cue sheet from the audio's pauses → scenes)
 - [ ] YouTube channel created
-- [ ] Audio hosting with range requests (R2) so seeking works on iPhone
+- [x] Range requests for /video and /audio via a small Worker, so playback and seeking work on iPhone
 
 ## Later ideas
 
