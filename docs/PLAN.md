@@ -41,7 +41,8 @@
 ## Production setup (one-time)
 
 - [x] Domain `paramlab.dev` registered
-- [ ] GitHub repos `postmortem-lab` and `paramlab.dev` pushed; Cloudflare Pages connected to the site repo
+- [x] GitHub repos `postmortem-lab` and `paramlab.dev` pushed
+- [ ] Cloudflare Pages connected to the site repo
 - [ ] YouTube channel created (name: Post-Mortem Lab, or personal name with Lab as a playlist)
 - [ ] ElevenLabs Creator plan; record about 30 minutes of clean audio for a professional voice clone
 - [ ] Screen Studio installed
