@@ -21,6 +21,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+function round(x) {
+  return Math.round(x * 1000) / 1000;
+}
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = join(ROOT, '.tts-cache');
 const GAP_SECONDS = 0.9; // silence between sections
@@ -51,6 +55,29 @@ console.log(`${episode}: ${sections.length} sections, ${chars} characters (rough
 
 if (args.includes('--dry-run')) {
   for (const s of sections) console.log(`\n### ${s.id} · ${s.title}\n${s.text}`);
+  // Estimated cues (about 15 characters a second plus the pauses), so scenes can be previewed before spending credits.
+  const est = [];
+  let t = 0;
+  for (const s of sections) {
+    const parts = s.text.split(/(<break time="[\d.]+s" \/>)/);
+    let line = 0;
+    for (const part of parts) {
+      const pause = /<break time="([\d.]+)s"/.exec(part);
+      if (pause) t += Number(pause[1]);
+      else if (part.trim()) {
+        const d = part.trim().length / 15;
+        est.push({ section: s.id, line: line++, text: part.trim(), start: round(t), end: round(t + d), estimated: true });
+        t += d;
+      }
+    }
+    t += GAP_SECONDS;
+  }
+  const cuesOut = join(ROOT, 'public', 'audio', `${episode}.cues.json`);
+  if (!existsSync(join(ROOT, 'public', 'audio', `${episode}.wav`))) {
+    mkdirSync(dirname(cuesOut), { recursive: true });
+    writeFileSync(cuesOut, JSON.stringify(est, null, 2));
+    console.log(`\nWrote estimated cues to ${cuesOut} (no audio yet)`);
+  }
   process.exit(0);
 }
 
@@ -92,8 +119,10 @@ for (const { s, body, mp3, generate } of jobs) {
   const wav = mp3.replace(/\.mp3$/, '.wav');
   if (generate) {
     process.stdout.write(`  ${s.id} ${s.title}: generating… `);
-    const audio = await api(`/v1/text-to-speech/${voice}?output_format=${format}`, body);
-    writeFileSync(mp3, Buffer.from(audio));
+    // The with-timestamps endpoint costs the same and returns per-character timing, used for exact scene cues.
+    const res = await api(`/v1/text-to-speech/${voice}/with-timestamps?output_format=${format}`, body);
+    writeFileSync(mp3, Buffer.from(res.audio_base64, 'base64'));
+    writeFileSync(mp3.replace(/\.mp3$/, '.json'), JSON.stringify(res.alignment ?? null));
     // Record spend as soon as it happens, so an interrupted run still counts.
     ledger[period.key] = (ledger[period.key] ?? 0) + s.text.length;
     writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
@@ -105,10 +134,32 @@ for (const { s, body, mp3, generate } of jobs) {
   wavs.push(wav);
 }
 
+// Line-level cues: each line is the text between two <break> tags; its start comes from the character alignment.
+const cues = [];
+let offset = 0;
+for (const { s, mp3 } of jobs) {
+  const wav = mp3.replace(/\.mp3$/, '.wav');
+  const alignmentFile = mp3.replace(/\.mp3$/, '.json');
+  const alignment = existsSync(alignmentFile) ? JSON.parse(readFileSync(alignmentFile, 'utf8')) : null;
+  const spoken = alignment ? alignment.characters.join('') : '';
+  let from = 0;
+  for (const [line, text] of linesOf(s.text).entries()) {
+    const probe = text.slice(0, 24);
+    const at = spoken.indexOf(probe, from);
+    const start = at >= 0 ? alignment.character_start_times_seconds[at] : null;
+    const endAt = at >= 0 ? alignment.character_end_times_seconds[Math.min(at + text.length - 1, spoken.length - 1)] : null;
+    if (at >= 0) from = at + probe.length;
+    cues.push({ section: s.id, line, text, start: start === null ? null : round(offset + start), end: endAt === null ? null : round(offset + endAt) });
+  }
+  offset += wavSeconds(wav) + GAP_SECONDS;
+}
+
 const out = join(ROOT, 'public', 'audio', `${episode}.wav`);
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, joinWavs(wavs, GAP_SECONDS));
-console.log(`\nWrote ${out}\nNext: python3 scripts/cues.py ${join('public', 'audio', `${episode}.wav`)}`);
+writeFileSync(out.replace(/\.wav$/, '.cues.json'), JSON.stringify(cues, null, 2));
+const missing = cues.filter((c) => c.start === null).length;
+console.log(`\nWrote ${out}${missing ? ` (${missing} lines without timing; check the cue file)` : ''}\nCues: ${episode}.cues.json (line start times for the video)`);
 
 // --- helpers ---
 
@@ -134,6 +185,28 @@ async function currentPeriod() {
   return { key: new Date().toISOString().slice(0, 7) };
 }
 
+/** Spoken lines of a section: the text between <break> tags. */
+function linesOf(text) {
+  return text.split(/<break[^>]*>/).map((t) => t.trim()).filter(Boolean);
+}
+
+function wavSeconds(file) {
+  const buf = readFileSync(file);
+  let rate = 44100;
+  let blockAlign = 2;
+  for (let p = 12; p < buf.length - 8; ) {
+    const id = buf.toString('ascii', p, p + 4);
+    const size = buf.readUInt32LE(p + 4);
+    if (id === 'fmt ') {
+      rate = buf.readUInt32LE(p + 12);
+      blockAlign = buf.readUInt16LE(p + 20);
+    }
+    if (id === 'data') return size / blockAlign / rate;
+    p += 8 + size + (size % 2);
+  }
+  return 0;
+}
+
 /** Sections are "### NN · Title" headings; everything up to the next heading is spoken text. */
 function parseScript(md) {
   const out = [];
@@ -155,7 +228,7 @@ async function api(path, body) {
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) fail(`ElevenLabs ${res.status}: ${await res.text()}`);
-  return body ? res.arrayBuffer() : res.json();
+  return res.json();
 }
 
 /** Join 16-bit PCM WAVs (same format) with silence in between. Reads chunks properly: afconvert adds a FLLR chunk. */

@@ -186,7 +186,7 @@ export const Episode = () => {
         <Label color={C.red}>■ Next · EP-01 · Ariane 5</Label>
         <div style={{ font: `600 56px ${display}`, margin: '14px 0 36px', opacity: pop(CUE.close) }}>Rebuilding the flight software.</div>
         <div style={{ display: 'flex', gap: 20 }}>
-          {['SRI 1 · active', 'SRI 2 · backup'].map((name, i) => {
+          {['SRI 2 · active', 'SRI 1 · backup'].map((name, i) => {
             const failed = on(CUE.both + 0.8 + (1 - i) * 0.3);
             return (
               <Panel key={name} color={failed ? C.red : C.ink} style={{ flex: 1, opacity: pop(CUE.both) }}>

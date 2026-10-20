@@ -91,9 +91,9 @@ export const ColdOpenScenes = () => {
       {/* Launch and breakup */}
       <AbsoluteFill style={{ opacity: fade(t, CUE.launch, CUE.cost), flexDirection: portrait ? 'column-reverse' : 'row', alignItems: 'center', justifyContent: 'space-around', padding: portrait ? '160px 0 120px' : 0 }}>
         <div>
-          <Label>Ariane 5 · flight 501</Label>
-          <div style={{ font: `600 120px ${mono}`, color: tPlus >= 37 ? C.red : C.ink }}>T+{tPlus.toFixed(1).padStart(4, '0')}s</div>
-          {tPlus >= 37 && <Label color={C.red}>■ Vehicle breakup</Label>}
+          <Label>Ariane 5 · flight 501 · from ignition</Label>
+          <div style={{ font: `600 120px ${mono}`, color: tPlus >= 37 ? C.red : C.ink }}>H0+{tPlus.toFixed(1).padStart(4, '0')}s</div>
+          {tPlus >= 37 && <Label color={C.red}>■ Guidance lost</Label>}
         </div>
         <Rocket t={t} />
       </AbsoluteFill>

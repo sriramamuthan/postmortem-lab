@@ -1,0 +1,12 @@
+{
+  "name": "@postmortem-lab/01-ariane-5",
+  "private": true,
+  "type": "module",
+  "description": "Ariane 5 flight 501: the overflow, the shared fault in both SRIs, and the fixes.",
+  "exports": {
+    ".": "./src/flight.ts"
+  },
+  "dependencies": {
+    "@postmortem-lab/toolkit": "*"
+  }
+}
