@@ -1,6 +1,6 @@
 import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { ARIANE_4, ARIANE_5, BREAKUP_ANGLE, LIFT_OFF, fly, type FlightResult } from '../../../incidents/01-ariane-5/src/flight';
-import { C, display, fade, Label, mono, Stage } from '../kit';
+import { C, display, fade, Label, mono, Stage, usePortrait } from '../kit';
 
 // Line timings come from the narration (public/audio/ep-01.cues.json, written by scripts/tts.mjs).
 export interface Cue {
@@ -96,12 +96,13 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
   };
   const pop = (at: number) => spring({ frame: frame - at * fps, fps, config: { damping: 15 } });
   const on = (at: number) => t >= at;
+  const portrait = usePortrait();
 
   // Section 05/06: map narration time to flight time so the chart moves with the voice.
   const flightT = interpolate(
     t,
-    [c('05', 3), c('05', 5), c('06', 0), c('06', 5)],
-    [LIFT_OFF, 36.7, 36.8, 39.1],
+    [c('05', 3), c('05', 5), c('05', 6), c('05', 6) + 0.8, c('06', 0), c('06', 5)],
+    [LIFT_OFF, 36.69, 36.72, 36.8, 36.85, 39.1],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
   const sample = [...A5.samples].reverse().find((s) => s.t <= flightT) ?? A5.samples[0]!;
@@ -111,17 +112,17 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
       {hasAudio && <Audio src={staticFile('audio/ep-01.wav')} />}
 
       {/* 01 · Cold open: two identical computers, both fail */}
-      <Scene t={t} from={0} to={next('01')}>
-        <div style={{ display: 'flex', gap: 28 }}>
+      <Scene t={t} from={0} to={next('01')} style={portrait ? { padding: '120px 40px' } : undefined}>
+        <div style={{ display: 'flex', flexDirection: portrait ? 'column' : 'row', gap: 28 }}>
           <SriCard name="SRI 2" role="active" failed={on(c('01', 4))} appear={pop(0.2)} />
           <SriCard name="SRI 1" role="standby" failed={on(c('01', 3))} appear={pop(c('01', 1))} />
         </div>
-        <div style={{ marginTop: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ marginTop: 40, display: 'flex', flexDirection: portrait ? 'column' : 'row', gap: 24, justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={{ opacity: pop(c('01', 2)) }}>
             <Label>Ariane 5 · flight 501 · Kourou</Label>
             <div style={{ font: `600 52px ${display}`, marginTop: 8 }}>4 June 1996</div>
           </div>
-          <div style={{ textAlign: 'right' }}>
+          <div style={{ textAlign: portrait ? 'left' : 'right' }}>
             <div style={{ font: `600 72px ${mono}`, color: on(c('01', 3)) ? C.red : C.ink, opacity: pop(c('01', 3)) }}>
               H0+{on(c('01', 6)) ? '39' : on(c('01', 4)) ? '36.75' : '36.70'}s
             </div>
@@ -228,6 +229,7 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
               <Panel key={name} color={failed ? C.red : C.ink} style={{ padding: '8px 14px' }}>
                 <div style={{ font: `600 24px ${mono}` }}>{name}</div>
                 <div style={{ font: `500 18px ${mono}`, color: failed ? C.red : C.green }}>{name === 'SRI 2' ? 'active' : 'standby'} · {failed ? 'shut down' : 'ok'}</div>
+                {name === 'SRI 1' && on(c('05', 9)) && <div style={{ font: `600 18px ${mono}`, color: C.red, opacity: pop(c('05', 9)) }}>failed 0.05 s earlier</div>}
               </Panel>
             );
           })}

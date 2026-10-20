@@ -25,6 +25,21 @@ export const Root = () => (
       width={1280}
       height={720}
     />
+    <Composition
+      id="ep-01-short"
+      component={Episode01}
+      defaultProps={{ cues: [], hasAudio: false } as EpisodeProps}
+      calculateMetadata={async (opts) => {
+        // The cold open as a Short: up to just before section 02.
+        const meta = await fromCues('ep-01')();
+        const intro = meta.props.cues.find((q) => q.section === '02')?.start ?? 25;
+        return { ...meta, durationInFrames: Math.ceil((intro - 0.2) * 30) };
+      }}
+      durationInFrames={30 * 30}
+      fps={30}
+      width={1080}
+      height={1920}
+    />
     <Composition id="ep-00-cold-open" component={ColdOpen} durationInFrames={30 * 45} fps={30} width={1280} height={720} />
     <Composition id="ep-00-short" component={ColdOpen} durationInFrames={30 * 45} fps={30} width={1080} height={1920} />
   </>
