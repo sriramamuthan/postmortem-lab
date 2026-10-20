@@ -12,6 +12,8 @@ ELEVENLABS_API_KEY=...        # ElevenLabs → Developers → API keys; text-to-
 ELEVENLABS_VOICE_ID=...       # find it with: npm run tts -- --voices
 # ELEVENLABS_MODEL=eleven_multilingual_v2
 # ELEVENLABS_FORMAT=mp3_44100_192   # higher quality on Creator plan and above
+# TTS_MAX_PER_RUN=12000              # credits; a run over this stops before sending anything
+# TTS_MAX_PER_PERIOD=25000           # credits per refresh period, tracked in .tts-cache/ledger.json
 ```
 
 ## Make an episode video

@@ -8,6 +8,11 @@
 // Settings come from video/.env (never committed): ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, and optionally
 // ELEVENLABS_MODEL (default eleven_multilingual_v2) and ELEVENLABS_FORMAT (default mp3_44100_128).
 //
+// Spending limits (credits = characters on multilingual v2), checked before any request is made:
+//   TTS_MAX_PER_RUN     default 12000  (one ~10 minute episode plus margin)
+//   TTS_MAX_PER_PERIOD  default 25000  (per credit refresh period; tracked in .tts-cache/ledger.json)
+// A run that would cross either limit stops without generating anything.
+//
 // Each "### NN · Title" section is one request. Results are cached by text and settings, so editing one section only
 // re-generates (and only spends credits on) that section. Sections are joined with a short silence into one WAV.
 import { createHash } from 'node:crypto';
@@ -53,30 +58,50 @@ mkdirSync(CACHE, { recursive: true });
 const voice = env('ELEVENLABS_VOICE_ID') ?? fail('Set ELEVENLABS_VOICE_ID in video/.env (find it with --voices)');
 const wavs = [];
 
-for (const [i, s] of sections.entries()) {
-  // Neighbouring text helps the model keep the same tone and pace across separate requests.
+// Work out what this run will actually send, then check the limits before spending anything.
+const jobs = sections.map((s, i) => {
   const body = {
     text: s.text,
     model_id: model,
     voice_settings: VOICE_SETTINGS,
+    // Neighbouring text helps the model keep the same tone and pace across separate requests.
     previous_text: sections[i - 1]?.text,
     next_text: sections[i + 1]?.text,
   };
   const key = createHash('sha256').update(JSON.stringify({ voice, format, body })).digest('hex').slice(0, 16);
   const mp3 = join(CACHE, `${episode}-${s.id}-${key}.mp3`);
-  const wav = mp3.replace(/\.mp3$/, '.wav');
+  const generate = only ? only === s.id : !existsSync(mp3);
+  if (only && only !== s.id && !existsSync(mp3)) fail(`Section ${s.id} has never been generated; run without --only first`);
+  return { s, body, mp3, generate };
+});
+const cost = jobs.filter((j) => j.generate).reduce((n, j) => n + j.s.text.length, 0);
+const maxRun = Number(env('TTS_MAX_PER_RUN', 12000));
+const maxPeriod = Number(env('TTS_MAX_PER_PERIOD', 25000));
+const period = await currentPeriod();
+const ledgerPath = join(CACHE, 'ledger.json');
+const ledger = existsSync(ledgerPath) ? JSON.parse(readFileSync(ledgerPath, 'utf8')) : {};
+const used = ledger[period.key] ?? 0;
 
-  const forced = only === s.id;
-  if (!existsSync(mp3) || forced) {
-    if (only && !forced && !existsSync(mp3)) fail(`Section ${s.id} has never been generated; run without --only first`);
+console.log(`This run: ${cost} credits · used this period: ${used} of ${maxPeriod} · per-run limit ${maxRun}`);
+if (period.remaining !== undefined) console.log(`ElevenLabs account: ${period.remaining} credits left until ${period.key}`);
+if (cost > maxRun) fail(`Stopped: ${cost} credits is over the per-run limit (${maxRun}). Use --only, or raise TTS_MAX_PER_RUN.`);
+if (used + cost > maxPeriod) fail(`Stopped: would reach ${used + cost} credits this period (limit ${maxPeriod}).`);
+if (period.remaining !== undefined && cost > period.remaining) fail('Stopped: not enough credits left on the account.');
+
+for (const { s, body, mp3, generate } of jobs) {
+  const wav = mp3.replace(/\.mp3$/, '.wav');
+  if (generate) {
     process.stdout.write(`  ${s.id} ${s.title}: generating… `);
     const audio = await api(`/v1/text-to-speech/${voice}?output_format=${format}`, body);
     writeFileSync(mp3, Buffer.from(audio));
+    // Record spend as soon as it happens, so an interrupted run still counts.
+    ledger[period.key] = (ledger[period.key] ?? 0) + s.text.length;
+    writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
     console.log('done');
   } else {
     console.log(`  ${s.id} ${s.title}: cached`);
   }
-  if (!existsSync(wav) || forced) execFileSync('afconvert', ['-f', 'WAVE', '-d', 'LEI16@44100', '-c', '1', mp3, wav]);
+  if (!existsSync(wav) || generate) execFileSync('afconvert', ['-f', 'WAVE', '-d', 'LEI16@44100', '-c', '1', mp3, wav]);
   wavs.push(wav);
 }
 
@@ -86,6 +111,28 @@ writeFileSync(out, joinWavs(wavs, GAP_SECONDS));
 console.log(`\nWrote ${out}\nNext: python3 scripts/cues.py ${join('public', 'audio', `${episode}.wav`)}`);
 
 // --- helpers ---
+
+/**
+ * The current credit period. Uses the account's reset date when the key may read it (user_read permission),
+ * otherwise the calendar month.
+ */
+async function currentPeriod() {
+  try {
+    const res = await fetch('https://api.elevenlabs.io/v1/user/subscription', {
+      headers: { 'xi-api-key': env('ELEVENLABS_API_KEY') ?? '' },
+    });
+    if (res.ok) {
+      const sub = await res.json();
+      return {
+        key: new Date(sub.next_character_count_reset_unix * 1000).toISOString().slice(0, 10),
+        remaining: sub.character_limit - sub.character_count,
+      };
+    }
+  } catch {
+    // Offline or no permission: fall back to the calendar month.
+  }
+  return { key: new Date().toISOString().slice(0, 7) };
+}
 
 /** Sections are "### NN · Title" headings; everything up to the next heading is spoken text. */
 function parseScript(md) {
