@@ -54,7 +54,7 @@ Releasing weekly from a finished season keeps the channel steady while Season 2 
 
 - [ ] **EP-00 narration timing.** "Lifts off… thirty-seven seconds later, it breaks apart" counts from lift-off; the
   report counts from ignition (guidance lost at H0 + 37 s, breakup at H0 + 39 s, about 32 s after lift-off). Site
-  text and video labels are fixed; the audio line needs re-generating (about 150 credits with `--only 01`).
+  text and video labels are fixed; the recorded line would need re-doing (about 50 characters of credits).
 
 ## Fact-check log
 
