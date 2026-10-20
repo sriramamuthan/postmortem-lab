@@ -18,7 +18,7 @@
 // exact silence after generation (the tags themselves are never sent).
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -95,7 +95,11 @@ const jobs = sections.map((s, i) => {
     previous_text: sections[i - 1] && spokenText(sections[i - 1].text),
     next_text: sections[i + 1] && spokenText(sections[i + 1].text),
   };
-  const key = createHash('sha256').update(JSON.stringify({ voice, format, body })).digest('hex').slice(0, 16);
+  // Keyed on this section's own text and settings only, so editing a neighbour doesn't re-generate (and re-bill) it.
+  const { previous_text, next_text, ...own } = body;
+  const key = createHash('sha256').update(JSON.stringify({ voice, format, own })).digest('hex').slice(0, 16);
+  const oldKey = createHash('sha256').update(JSON.stringify({ voice, format, body })).digest('hex').slice(0, 16);
+  migrate(join(CACHE, `${episode}-${s.id}-${oldKey}`), join(CACHE, `${episode}-${s.id}-${key}`));
   const mp3 = join(CACHE, `${episode}-${s.id}-${key}.mp3`);
   const generate = only ? only === s.id : !existsSync(mp3);
   if (only && only !== s.id && !existsSync(mp3)) fail(`Section ${s.id} has never been generated; run without --only first`);
@@ -215,6 +219,13 @@ function lineTimes(lines, alignment) {
     at += l.text.length + 1; // the joining space
     return { start: starts[first], end: ends[Math.min(last, ends.length - 1)] };
   });
+}
+
+/** One-time move of cache files from the old key (which included neighbouring text) to the new one. */
+function migrate(from, to) {
+  for (const ext of ['.mp3', '.json', '.wav']) {
+    if (existsSync(from + ext) && !existsSync(to + ext)) renameSync(from + ext, to + ext);
+  }
 }
 
 /** Walk from time t in direction dir until 20 ms in a row are below -45 dBFS, or until the limit. */

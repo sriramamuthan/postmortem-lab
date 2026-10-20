@@ -125,12 +125,12 @@ class Sri implements Unit<SriOutput> {
       if (this.#fixes.bestEffortData) {
         if (this.#handled) return;
         this.#handled = true;
-        this.#log({ t, source: this.name, message: 'Operand Error handled; still sending best-effort attitude data' });
+        this.#log({ t, source: this.name, message: 'Operand Error handled: keeps sending its best estimate of direction' });
         return;
       }
       // The specification: report the failure, store the context, shut the processor down.
       this.failedAt = t;
-      this.#log({ t, source: this.name, message: `Operand Error converting BH = ${Math.round(this.lastBh)}; processor shut down` });
+      this.#log({ t, source: this.name, message: `Operand Error: sideways-speed value BH = ${Math.round(this.lastBh).toLocaleString('en-US')} doesn't fit in 16 bits. Computer shuts itself down` });
     }
   }
 }
@@ -160,23 +160,23 @@ export function fly(launcher: Launcher, fixes: Fixes = {}): FlightResult {
     // The OBC reads the bus at the end of each cycle.
     const t = base + CYCLE;
     const reading = bus.read();
-    if (reading.switched) log({ t, source: 'OBC', message: `Active SRI failed; switched to ${reading.unit.name}` });
+    if (reading.switched) log({ t, source: 'OBC', message: `Active SRI failed; switched to the backup, ${reading.unit.name}` });
 
     if (reading.value.kind === 'diagnostic' && diagnosticSince === undefined) {
       diagnosticSince = t;
-      log({ t, source: 'OBC', message: `No healthy SRI left. Reading ${reading.unit.name}'s diagnostic bit pattern as flight data` });
-      log({ t, source: 'OBC', message: 'Commanding full deflection of the booster nozzles' });
+      log({ t, source: 'OBC', message: `No working guidance computer left. Reading the main computer's error report as if it were directions` });
+      log({ t, source: 'OBC', message: 'Sees a huge false course error. Swings the booster nozzles fully to one side' });
     }
     if (diagnosticSince !== undefined && breakupAt === undefined) {
       boosters = 1;
       if (vulcain === 0 && t - diagnosticSince >= 0.3) {
         vulcain = 1;
-        log({ t, source: 'OBC', message: 'Commanding full deflection of the Vulcain main engine nozzle' });
+        log({ t, source: 'OBC', message: 'Swings the main engine nozzle fully to one side too' });
       }
       angleOfAttack += (6.2 * boosters + 3 * vulcain) * CYCLE;
       if (angleOfAttack > BREAKUP_ANGLE) {
         breakupAt = round(t);
-        log({ t, source: 'Launcher', message: `Angle of attack over ${BREAKUP_ANGLE}°: boosters separate, self-destruct triggered` });
+        log({ t, source: 'Launcher', message: `Nose more than ${BREAKUP_ANGLE}° off the direction of travel (angle of attack): boosters tear away, self-destruct fires` });
       }
     }
 

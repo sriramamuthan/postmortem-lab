@@ -31,9 +31,9 @@ const Scene = ({ t, from, to, children, style }: { t: number; from: number; to: 
 /** A status lamp card for one SRI. */
 const SriCard = ({ name, role, failed, appear = 1 }: { name: string; role: string; failed: boolean; appear?: number }) => (
   <Panel color={failed ? C.red : C.ink} style={{ flex: 1, opacity: appear }}>
-    <div style={{ font: `500 20px ${mono}`, color: C.muted }}>Inertial reference system</div>
-    <div style={{ font: `600 40px ${display}`, margin: '6px 0 10px' }}>{name} · {role}</div>
-    <div style={{ font: `600 22px ${mono}`, color: failed ? C.red : C.green }}>{failed ? '■ Operand error · shut down' : '● Nominal'}</div>
+    <div style={{ font: `500 20px ${mono}`, color: C.muted }}>Guidance computer · {name}</div>
+    <div style={{ font: `600 40px ${display}`, margin: '6px 0 10px' }}>{role}</div>
+    <div style={{ font: `600 22px ${mono}`, color: failed ? C.red : C.green }}>{failed ? '■ Error · shut itself down' : '● Working'}</div>
   </Panel>
 );
 
@@ -48,7 +48,7 @@ const BhChart = ({ flights, until, width = 1000, height = 330 }: { flights: { re
     <svg width={width} height={height + 34} style={{ overflow: 'visible' }}>
       <rect x={0} y={0} width={width} height={height} fill="#fbfbf9" stroke={C.rule} />
       <line x1={0} x2={width} y1={y(LIMIT)} y2={y(LIMIT)} stroke={C.red} strokeDasharray="8 6" strokeWidth={2} />
-      <text x={10} y={y(LIMIT) - 10} fill={C.red} style={{ font: `500 20px ${mono}` }}>int16 limit · 32,767</text>
+      <text x={10} y={y(LIMIT) - 10} fill={C.red} style={{ font: `500 20px ${mono}` }}>16-bit limit · 32,767</text>
       <line x1={x(LIFT_OFF)} x2={x(LIFT_OFF)} y1={0} y2={height} stroke={C.ink} strokeDasharray="3 6" opacity={0.4} />
       <text x={x(LIFT_OFF) + 8} y={height - 12} fill={C.muted} style={{ font: `500 18px ${mono}` }}>lift-off</text>
       {flights.map(({ result, color, label }) => {
@@ -62,7 +62,7 @@ const BhChart = ({ flights, until, width = 1000, height = 330 }: { flights: { re
         );
       })}
       {[0, 10, 20, 30, 40].map((t) => (
-        <text key={t} x={x(t)} y={height + 26} fill={C.muted} textAnchor="middle" style={{ font: `500 17px ${mono}` }}>H0+{t}</text>
+        <text key={t} x={x(t)} y={height + 26} fill={C.muted} textAnchor="middle" style={{ font: `500 17px ${mono}` }}>{t} s</text>
       ))}
     </svg>
   );
@@ -114,8 +114,8 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
       {/* 01 · Cold open: two identical computers, both fail */}
       <Scene t={t} from={0} to={next('01')} style={portrait ? { padding: '120px 40px' } : undefined}>
         <div style={{ display: 'flex', flexDirection: portrait ? 'column' : 'row', gap: 28 }}>
-          <SriCard name="SRI 2" role="active" failed={on(c('01', 4))} appear={pop(0.2)} />
-          <SriCard name="SRI 1" role="standby" failed={on(c('01', 3))} appear={pop(c('01', 1))} />
+          <SriCard name="SRI 2" role="Main computer" failed={on(c('01', 4))} appear={pop(0.2)} />
+          <SriCard name="SRI 1" role="Backup computer" failed={on(c('01', 3))} appear={pop(c('01', 1))} />
         </div>
         <div style={{ marginTop: 40, display: 'flex', flexDirection: portrait ? 'column' : 'row', gap: 24, justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={{ opacity: pop(c('01', 2)) }}>
@@ -124,10 +124,11 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
           </div>
           <div style={{ textAlign: portrait ? 'left' : 'right' }}>
             <div style={{ font: `600 72px ${mono}`, color: on(c('01', 3)) ? C.red : C.ink, opacity: pop(c('01', 3)) }}>
-              H0+{on(c('01', 6)) ? '39' : on(c('01', 4)) ? '36.75' : '36.70'}s
+              {on(c('01', 6)) ? '39' : on(c('01', 4)) ? '36.75' : '36.70'} s
             </div>
             <div style={{ opacity: pop(c('01', 3)) }}>
-              <Label color={C.red}>{on(c('01', 6)) ? '■ Vehicle breakup' : on(c('01', 5)) ? '■ Same code · same number' : '■ BH > 32,767 · int16 overflow'}</Label>
+              <Label>after engine ignition</Label>
+              <Label color={C.red}>{on(c('01', 6)) ? '■ Vehicle breakup' : on(c('01', 5)) ? '■ Same code · same number' : '■ Number > 32,767 · too big for its box'}</Label>
             </div>
           </div>
         </div>
@@ -147,16 +148,16 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
       <Scene t={t} from={c('03')} to={next('03')}>
         <div style={{ display: 'flex', gap: 28, alignItems: 'stretch', opacity: pop(c('03', 1)) }}>
           <Panel style={{ flex: 1 }}>
-            <Label>SRI · inertial reference system</Label>
+            <Label>Guidance computer (SRI)</Label>
             <div style={{ font: `500 30px ${display}`, marginTop: 10 }}>Tells the rocket which way it’s pointing</div>
           </Panel>
           <Panel style={{ flex: 1, opacity: pop(c('03', 2)) }}>
-            <Label>Software</Label>
-            <div style={{ font: `600 30px ${mono}`, marginTop: 10 }}>Ariane 4 SRI <span style={{ color: C.muted }}>≈</span> Ariane 5 SRI</div>
+            <Label>Its software</Label>
+            <div style={{ font: `600 30px ${mono}`, marginTop: 10 }}>Ariane 4 <span style={{ color: C.muted }}>≈</span> Ariane 5</div>
           </Panel>
         </div>
         <div style={{ marginTop: 44, opacity: pop(c('03', 4)) }}>
-          <div style={{ font: `600 30px ${mono}` }}>alignment()</div>
+          <div style={{ font: `600 30px ${mono}` }}>Alignment routine <span style={{ font: `500 22px ${mono}`, color: C.muted }}>· sets up the computer on the ground</span></div>
           {(() => {
             const W = 1088;
             const x = (s: number) => ((s + 5) / 55) * W;
@@ -166,11 +167,11 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
                 <rect x={x(-3)} y={40} width={x(LIFT_OFF) - x(-3)} height={40} fill={C.green} opacity={pop(c('03', 5)) * 0.8} />
                 <rect x={x(LIFT_OFF)} y={40} width={(x(47) - x(LIFT_OFF)) * pop(c('03', 6))} height={40} fill={C.red} opacity={0.75} />
                 <line x1={x(LIFT_OFF)} x2={x(LIFT_OFF)} y1={20} y2={100} stroke={C.ink} strokeWidth={2} />
-                <text x={x(-3)} y={118} style={{ font: `500 18px ${mono}` }} fill={C.muted}>H0−3 flight mode</text>
+                <text x={x(-3)} y={118} style={{ font: `500 18px ${mono}` }} fill={C.muted}>3 s before ignition: flight mode</text>
                 <text x={x(LIFT_OFF) + 8} y={22} style={{ font: `500 18px ${mono}` }} fill={C.ink}>lift-off</text>
-                <text x={x(47)} y={118} textAnchor="end" style={{ font: `500 18px ${mono}` }} fill={C.muted}>H0+47 · 50 s after flight mode</text>
+                <text x={x(47)} y={118} textAnchor="end" style={{ font: `500 18px ${mono}` }} fill={C.muted}>47 s after ignition</text>
                 <text x={(x(LIFT_OFF) + x(47)) / 2} y={66} textAnchor="middle" style={{ font: `600 20px ${mono}` }} fill="#fff" opacity={pop(c('03', 6))}>
-                  still running in flight · no purpose on Ariane 5
+                  still running in flight · useless on Ariane 5
                 </text>
               </svg>
             );
@@ -182,13 +183,13 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
       {/* 04 · The number and the seven risky conversions */}
       <Scene t={t} from={c('04')} to={next('04')}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28, opacity: pop(c('04', 2)) }}>
-          <Panel><Label>BH · horizontal bias</Label><div style={{ font: `600 40px ${mono}`, marginTop: 6 }}>float64</div></Panel>
+          <Panel><Label>BH · from sideways speed</Label><div style={{ font: `600 32px ${mono}`, marginTop: 6, whiteSpace: 'nowrap' }}>a number</div></Panel>
           <div style={{ font: `600 48px ${mono}`, color: C.muted }}>→</div>
-          <Panel color={C.red}><Label color={C.red}>convert</Label><div style={{ font: `600 40px ${mono}`, marginTop: 6 }}>int16</div></Panel>
-          <div style={{ font: `600 52px ${mono}`, color: C.red, opacity: pop(c('04', 3)), marginLeft: 20 }}>max 32,767</div>
+          <Panel color={C.red}><Label color={C.red}>squeezed into</Label><div style={{ font: `600 32px ${mono}`, marginTop: 6, whiteSpace: 'nowrap' }}>a 16-bit box</div></Panel>
+          <div style={{ font: `600 40px ${mono}`, color: C.red, opacity: pop(c('04', 3)), marginLeft: 12, whiteSpace: 'nowrap' }}>holds up to 32,767</div>
         </div>
         <div style={{ marginTop: 50, opacity: pop(c('04', 4)) }}>
-          <Label>Conversions flagged as risky</Label>
+          <Label>Seven numbers flagged as risky</Label>
           <div style={{ display: 'flex', gap: 14, marginTop: 14 }}>
             {Array.from({ length: 7 }, (_, i) => {
               const protectedVar = i < 4;
@@ -198,12 +199,12 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
               return (
                 <Panel key={i} color={color} style={{ flex: 1, padding: '14px 10px', textAlign: 'center', background: isBh && on(c('04', 7)) ? '#fde8e6' : '#fbfbf9' }}>
                   <div style={{ font: `600 24px ${mono}`, color: shown ? color : C.muted }}>{isBh && on(c('04', 7)) ? 'BH' : `v${i + 1}`}</div>
-                  <div style={{ font: `500 15px ${mono}`, color: C.muted, marginTop: 4 }}>{shown ? (protectedVar ? 'protected' : 'unprotected') : '·'}</div>
+                  <div style={{ font: `500 15px ${mono}`, color: C.muted, marginTop: 4 }}>{shown ? (protectedVar ? 'checked' : 'no check') : '·'}</div>
                 </Panel>
               );
             })}
           </div>
-          <div style={{ marginTop: 18, font: `500 24px ${mono}`, color: C.muted, opacity: pop(c('04', 6)) }}>Reason: maximum workload target of 80% for the SRI computer</div>
+          <div style={{ marginTop: 18, font: `500 24px ${mono}`, color: C.muted, opacity: pop(c('04', 6)) }}>Why: to keep the computer less than 80% busy</div>
         </div>
         <div style={{ marginTop: 28, font: `500 30px ${display}`, opacity: pop(c('04', 9)) }}>
           “…a reasoning which in the case of the variable BH <span style={{ color: C.red }}>turned out to be faulty</span>.” <span style={{ font: `500 20px ${mono}`, color: C.muted }}>§2.2</span>
@@ -214,12 +215,12 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
       <Scene t={t} from={c('05')} to={next('06')} style={{ flexDirection: 'row', alignItems: 'center', gap: 36 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-            <Label>{on(c('05', 1)) && !on(c('05', 2)) ? 'Horizontal velocity builds 5× faster than Ariane 4' : 'BH in flight · Ariane 5'}</Label>
-            <div style={{ font: `600 40px ${mono}`, color: sample.sri1 === 'failed' ? C.red : C.ink }}>H0+{flightT.toFixed(1)}s</div>
+            <Label>{on(c('05', 1)) && !on(c('05', 2)) ? 'Sideways speed builds 5× faster than on Ariane 4' : 'The number (BH) · Ariane 5'}</Label>
+            <div style={{ font: `600 40px ${mono}`, whiteSpace: 'nowrap', color: sample.sri1 === 'failed' ? C.red : C.ink }}>{flightT.toFixed(1)} s <span style={{ font: `500 18px ${mono}`, color: C.muted }}>after ignition</span></div>
           </div>
           <BhChart flights={[{ result: A5, color: sample.sri1 === 'failed' ? C.red : C.green, label: 'Ariane 5' }]} until={flightT} width={760} height={300} />
           <div style={{ marginTop: 18, display: 'flex', gap: 14, opacity: pop(c('05', 7)) }}>
-            {['Report the failure', 'Save the context', 'Shut the processor down'].map((s, i) => (
+            {['Report the error', 'Save the details', 'Shut the computer down'].map((s, i) => (
               <Panel key={s} color={i === 2 ? C.red : C.ink} style={{ padding: '10px 14px', font: `500 19px ${mono}` }}>{i + 1}. {s}</Panel>
             ))}
           </div>
@@ -229,17 +230,17 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
             const failed = (name === 'SRI 1' ? sample.sri1 : sample.sri2) === 'failed';
             return (
               <Panel key={name} color={failed ? C.red : C.ink} style={{ padding: '8px 14px' }}>
-                <div style={{ font: `600 24px ${mono}` }}>{name}</div>
-                <div style={{ font: `500 18px ${mono}`, color: failed ? C.red : C.green }}>{name === 'SRI 2' ? 'active' : 'standby'} · {failed ? 'shut down' : 'ok'}</div>
+                <div style={{ font: `600 22px ${mono}` }}>{name === 'SRI 2' ? 'Main computer' : 'Backup computer'}</div>
+                <div style={{ font: `500 18px ${mono}`, color: failed ? C.red : C.green }}>{failed ? 'shut itself down' : name === 'SRI 2' ? 'guiding' : 'standing by'}</div>
                 {name === 'SRI 1' && on(c('05', 9)) && <div style={{ font: `600 18px ${mono}`, color: C.red, opacity: pop(c('05', 9)) }}>failed 0.05 s earlier</div>}
               </Panel>
             );
           })}
           {on(c('06', 1)) ? (
             <div style={{ display: 'grid', justifyItems: 'center' }}>
-              <div style={{ font: `600 20px ${mono}`, color: C.red, letterSpacing: 2 }}>{on(c('06', 2)) ? 'OBC: "attitude error!"' : '1011 0010 0111 0001'}</div>
+              <div style={{ font: `600 20px ${mono}`, color: C.red, letterSpacing: 2 }}>{on(c('06', 2)) ? 'Flight computer: "way off course!"' : 'error report: 1011 0010…'}</div>
               <Rocket tilt={Math.min(sample.angleOfAttack * 2.5, 60)} broken={interpolate(flightT, [39, 39.1], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) * pop(c('06', 5))} color={sample.angleOfAttack > 0 ? C.red : C.ink} />
-              <div style={{ font: `600 24px ${mono}`, color: C.red }}>AoA {sample.angleOfAttack.toFixed(1)}° / {BREAKUP_ANGLE}°</div>
+              <div style={{ font: `600 24px ${mono}`, color: C.red }}>Nose off course {sample.angleOfAttack.toFixed(1)}° / {BREAKUP_ANGLE}°</div>
             </div>
           ) : (
             <div style={{ display: 'grid', justifyItems: 'center' }}><Rocket tilt={0} broken={0} color={C.ink} /></div>
@@ -262,7 +263,7 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
           />
         </div>
         <div style={{ marginTop: 22, font: `500 26px ${display}`, color: C.muted, opacity: pop(c('07', 4)) }}>
-          Ariane 5 trajectory data was not in the SRI specification, and the SRI was never tested with it.
+          Ariane 5’s flight path was never in the guidance computer’s requirements, and it was never tested with it.
         </div>
       </Scene>
 
@@ -271,9 +272,9 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
         <Label color={C.red}>■ Fix it · any one is enough</Label>
         <div style={{ display: 'flex', gap: 20, marginTop: 20 }}>
           {[
-            { at: c('08', 1), name: 'Protect the conversion', how: 'toIntSaturating(BH)', src: 'like the other four' },
-            { at: c('08', 3), name: 'Alignment off at lift-off', how: 'if (t >= liftOff) return', src: 'Board recommendation R1' },
-            { at: c('08', 5), name: 'Best-effort data', how: 'catch → keep flying', src: 'Board recommendation R3' },
+            { at: c('08', 1), name: 'Check the number', how: 'stop at 32,767, don’t crash', src: 'like the other four' },
+            { at: c('08', 3), name: 'Switch off unneeded code', how: 'alignment stops at lift-off', src: 'report recommendation 1' },
+            { at: c('08', 5), name: 'Never go silent', how: 'on error, send best estimate', src: 'report recommendation 3' },
           ].map((f) => (
             <Panel key={f.name} color={on(f.at) ? C.green : C.rule} style={{ flex: 1, opacity: on(f.at) ? 1 : 0.35 }}>
               <div style={{ font: `600 30px ${display}` }}>{f.name}</div>

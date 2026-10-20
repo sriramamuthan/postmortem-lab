@@ -35,12 +35,12 @@ The code stayed anyway, for commonality. <break time="1.0s" />
 
 ### 04 · The number
 
-Every cycle, that function computed a value called the horizontal bias. <break time="0.3s" /> B.H. for short. <break time="0.4s" />
-And it converted it from a sixty-four bit floating point number into a sixteen bit signed integer. <break time="0.5s" />
+Every cycle, that routine worked out a number from how fast the rocket was moving sideways. <break time="0.3s" /> The report calls it the horizontal bias, or B.H. <break time="0.4s" />
+Then it squeezed that number into a sixteen bit integer: a small box for whole numbers. <break time="0.5s" />
 The biggest number that fits is thirty-two thousand, seven hundred and sixty-seven. <break time="0.8s" />
 Seven conversions like this had been flagged as risky. <break time="0.3s" />
-Four got protection. <break time="0.3s" />
-Three didn't, to keep the computer under an eighty percent workload. <break time="0.4s" />
+Four got a check. <break time="0.3s" />
+Three didn't, to keep the computer less than eighty percent busy. <break time="0.4s" />
 B.H. was one of the three. <break time="0.4s" />
 The reasoning was that it could never get that big. <break time="0.3s" />
 In the report's words, that reasoning turned out to be faulty. <break time="1.0s" />
@@ -51,19 +51,19 @@ Here's why. <break time="0.3s" />
 Ariane Five builds up horizontal speed five times faster than Ariane Four. <break time="0.5s" />
 Let's fly it. <break time="0.6s" />
 Lift-off. <break time="0.4s" /> B.H. climbs. <break time="0.4s" />
-At thirty-six point seven seconds, it crosses the limit. <break time="0.3s" /> Operand error. <break time="0.5s" />
-The rule for any error was simple: report it, save the details, and shut the processor down. <break time="0.5s" />
+At thirty-six point seven seconds, it crosses the limit. <break time="0.3s" /> Operand error: the number doesn't fit. <break time="0.5s" />
+The rule for any error was simple: report it, save the details, and shut the computer down. <break time="0.5s" />
 That's sensible for a hardware fault, because the backup takes over. <break time="0.4s" />
 But the backup was running the same code, on the same numbers. <break time="0.3s" />
 It had already shut down, one cycle earlier. <break time="1.0s" />
 
 ### 06 · Garbage in
 
-Now there's no healthy guidance left. <break time="0.4s" />
-And the active unit isn't sending flight data any more. It's sending a diagnostic bit pattern. <break time="0.5s" />
-The flight computer reads it as attitude. <break time="0.3s" />
-It sees a huge error that isn't there, and swings the booster nozzles, then the main engine, all the way over. <break time="0.5s" />
-The angle of attack passes twenty degrees. <break time="0.3s" />
+Now there's no working guidance computer left. <break time="0.4s" />
+And the main one isn't sending directions any more. It's sending an error report. <break time="0.5s" />
+The flight computer reads that error report as directions. <break time="0.3s" />
+It sees a huge course error that isn't there, and swings the engine nozzles all the way to one side. <break time="0.5s" />
+The nose swings more than twenty degrees off the direction of travel. <break time="0.3s" />
 At thirty-nine seconds, the boosters tear away, and the self-destruct fires. <break time="1.2s" />
 
 ### 07 · Ariane Four
@@ -76,10 +76,10 @@ Ariane Five's trajectory wasn't in the system's specification, and the system wa
 ### 08 · Three fixes
 
 So, let's fix it. <break time="0.5s" />
-Fix one: protect the conversion, like the other four. <break time="0.3s" /> B.H. saturates instead of crashing. <break time="0.5s" />
+Fix one: check the number, like the other four. <break time="0.3s" /> It stops at the limit instead of crashing. <break time="0.5s" />
 Fix two, the board's first recommendation: switch alignment off at lift-off. <break time="0.3s" />
 Code that isn't needed shouldn't be running. <break time="0.5s" />
-Fix three: never stop sending best-effort data. <break time="0.3s" /> Handle the error, and keep flying. <break time="0.6s" />
+Fix three: never go silent. <break time="0.3s" /> On an error, keep sending your best estimate, and keep flying. <break time="0.6s" />
 Any one of them saves the rocket. <break time="0.4s" />
 And each one has a test that fails without it. <break time="1.0s" />
 

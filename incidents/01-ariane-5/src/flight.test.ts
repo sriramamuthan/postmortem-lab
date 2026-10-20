@@ -28,7 +28,7 @@ describe('Ariane 5 flight 501 as flown', () => {
   });
 
   it('reads diagnostic data as flight data and commands full nozzle deflection', () => {
-    expect(flight.events.some((e) => /diagnostic bit pattern as flight data/.test(e.message))).toBe(true);
+    expect(flight.events.some((e) => /error report as if it were directions/.test(e.message))).toBe(true);
     expect(flight.samples.at(-1)!.boosters).toBe(1);
   });
 
