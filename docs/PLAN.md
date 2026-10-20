@@ -10,7 +10,7 @@
 | 1. Research | `incidents/NN/README.md`: timeline, mechanism, sources | Every fact has a source |
 | 2. Build | Simulation, bug, fix, tests | Test fails with bug and passes with fix |
 | 3. Demo | Interactive component on the site | Works on phone, light and dark |
-| 4. Write | Post in `sriramamuthan.dev/src/content/posts/lab/` | Hook → story → break it → fix → lesson |
+| 4. Write | Post in `paramlab.dev/src/content/posts/lab/` | Hook → story → break it → fix → lesson |
 | 5. Script | `incidents/NN/SCRIPT.md`, 8–12 minute voiceover | Read aloud under 12 minutes |
 | 6. Record | Voice (ElevenLabs clone) + screen (Screen Studio) | Captions checked |
 | 7. Ship | Tag `ep-NN`, publish post, YouTube, newsletter | Post links tag; video links post |
@@ -40,8 +40,8 @@
 
 ## Production setup (one-time)
 
-- [ ] Domain `sriramamuthan.dev` on Cloudflare Registrar
-- [ ] GitHub repos `postmortem-lab` and `sriramamuthan.dev` pushed; Cloudflare Pages connected to the site repo
+- [x] Domain `paramlab.dev` registered
+- [ ] GitHub repos `postmortem-lab` and `paramlab.dev` pushed; Cloudflare Pages connected to the site repo
 - [ ] YouTube channel created (name: Post-Mortem Lab, or personal name with Lab as a playlist)
 - [ ] ElevenLabs Creator plan; record about 30 minutes of clean audio for a professional voice clone
 - [ ] Screen Studio installed

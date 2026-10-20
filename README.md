@@ -8,7 +8,7 @@ Each episode takes one real incident and ships:
 - **A faithful simulation** of the system and the exact mechanism that failed
 - **The bug**, reproducible on demand
 - **The fix**, with tests proving the bug happens without it and doesn’t with it
-- **An interactive demo** embedded in the write-up at [sriramamuthan.dev/lab](https://sriramamuthan.dev/lab/)
+- **An interactive demo** embedded in the write-up at [paramlab.dev/lab](https://paramlab.dev/lab/)
 - **A video** walking through all of it
 
 Every episode is a git tag (`ep-01`, `ep-02`, …), so you can check out exactly what you saw.

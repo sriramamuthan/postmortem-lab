@@ -4,9 +4,9 @@ Short records of choices we made and why. Newest first.
 
 ## 2026-10-20: Initial setup
 
-- **Name:** Post-Mortem Lab, tagline “Break it yourself.” It lives at `sriramamuthan.dev/lab` rather than its own
+- **Name:** Post-Mortem Lab, tagline “Break it yourself.” It lives at `paramlab.dev/lab` on the ParamLab site rather than its own
   domain, because the personal site outlives any one project.
-- **Two repos:** `postmortem-lab` (code) and `sriramamuthan.dev` (site). The site also hosts a second series,
+- **Two repos:** `postmortem-lab` (code) and `paramlab.dev` (site). The site also hosts a second series,
   *Show Me Why* (science and maths explainers), so it shouldn’t live inside this repo.
 - **Stack:** TypeScript (strict) and Vitest. It runs in the browser for demos and in Node for tests with no
   translation. WASM only if a simulation needs it.
