@@ -22,6 +22,11 @@ sessions; "Ram" is hands-on time.
 **Season 1 total:** roughly 12–18 AI sessions and 8–10 hours of Ram's time; about 2–3 weeks elapsed at 5 h/week.
 Releasing weekly from a finished season keeps the channel steady while Season 2 is built.
 
+## Credit budget
+
+About 30k ElevenLabs credits left (Oct 2026). From EP-02: videos about 2 minutes, at most ~2,000 credits each (hook,
+mechanism, the break, one fix, the lesson). The page carries the detail. Six remaining Season 1 episodes ≈ 12k.
+
 ## Quality bar (every episode)
 
 - [ ] Every number matches an official report, and the post cites it (see fact-check log below)
