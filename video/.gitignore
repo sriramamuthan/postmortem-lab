@@ -1,2 +1,4 @@
 public/audio/
 out/
+.env
+.tts-cache/

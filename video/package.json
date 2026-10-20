@@ -6,7 +6,8 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts",
-    "still": "remotion still src/index.ts"
+    "still": "remotion still src/index.ts",
+    "tts": "node scripts/tts.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.537",

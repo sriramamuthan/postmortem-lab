@@ -3,10 +3,23 @@
 Every episode video is code: [Remotion](https://www.remotion.dev) scenes in the paramlab.dev look, timed to the
 narration. One set of scenes renders both the 16:9 YouTube version and the 9:16 Short.
 
+## ElevenLabs setup (once)
+
+Create `video/.env` (git-ignored):
+
+```
+ELEVENLABS_API_KEY=...        # ElevenLabs → Developers → API keys; text-to-speech + voices read access is enough
+ELEVENLABS_VOICE_ID=...       # find it with: npm run tts -- --voices
+# ELEVENLABS_MODEL=eleven_multilingual_v2
+# ELEVENLABS_FORMAT=mp3_44100_192   # higher quality on Creator plan and above
+```
+
 ## Make an episode video
 
-1. Export the narration from ElevenLabs and convert it to WAV:
-   `afconvert -f WAVE -d LEI16 ep-01.mp3 public/audio/ep-01.wav`
+1. Generate the narration from the TTS script (needs `video/.env`, see below):
+   `npm run tts -- ../docs/scripts/ep-01-tts.md` writes `public/audio/ep-01.wav`.
+   Add `--dry-run` first to check sections and credit cost; `--only 04` regenerates one section. Unchanged sections
+   come from `.tts-cache/` and cost nothing.
 2. Find the pauses: `python3 scripts/cues.py public/audio/ep-01.wav`. Each pause end is where the next line starts.
 3. Map script lines to those times in the episode's `CUE` object, and build the scenes in `src/ep-NN/`.
 4. Preview with `npm run studio`, then render:
