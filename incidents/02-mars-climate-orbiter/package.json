@@ -1,0 +1,12 @@
+{
+  "name": "@postmortem-lab/02-mars-climate-orbiter",
+  "private": true,
+  "type": "module",
+  "description": "Mars Climate Orbiter: pound-force seconds read as newton-seconds, nine months of small errors, and the fix.",
+  "exports": {
+    ".": "./src/cruise.ts"
+  },
+  "dependencies": {
+    "@postmortem-lab/toolkit": "*"
+  }
+}

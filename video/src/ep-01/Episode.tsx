@@ -1,32 +1,13 @@
-import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { ARIANE_4, ARIANE_5, BREAKUP_ANGLE, LIFT_OFF, fly, type FlightResult } from '../../../incidents/01-ariane-5/src/flight';
-import { C, display, fade, Label, mono, Stage, usePortrait } from '../kit';
+import { C, cueTimes, display, Label, mono, Panel, Scene, Stage, usePortrait, type EpisodeProps } from '../kit';
 
-// Line timings come from the narration (public/audio/ep-01.cues.json, written by scripts/tts.mjs).
-export interface Cue {
-  section: string;
-  line: number;
-  start: number | null;
-  end: number | null;
-}
-export interface EpisodeProps {
-  cues: Cue[];
-  hasAudio: boolean;
-}
+export type { Cue, EpisodeProps } from '../kit';
 
 // The real simulation drives every chart in this video.
 const A5 = fly(ARIANE_5);
 const A4 = fly(ARIANE_4);
 const LIMIT = 32767;
-
-const Panel = ({ children, color = C.ink, style }: { children: React.ReactNode; color?: string; style?: React.CSSProperties }) => (
-  <div style={{ border: `2px solid ${color}`, background: '#fbfbf9', padding: '18px 24px', ...style }}>{children}</div>
-);
-
-const Scene = ({ t, from, to, children, style }: { t: number; from: number; to: number; children: React.ReactNode; style?: React.CSSProperties }) =>
-  t < from - 0.1 || t > to + 0.1 ? null : (
-    <AbsoluteFill style={{ opacity: fade(t, from, to), justifyContent: 'center', padding: '96px 96px 72px', ...style }}>{children}</AbsoluteFill>
-  );
 
 /** A status lamp card for one SRI. */
 const SriCard = ({ name, role, failed, appear = 1 }: { name: string; role: string; failed: boolean; appear?: number }) => (
@@ -88,12 +69,7 @@ export const Episode = ({ cues, hasAudio }: EpisodeProps) => {
   const t = frame / fps;
   const end = durationInFrames / fps;
 
-  // c('05', 3) = when line 3 of section 05 starts. Sections end where the next one starts.
-  const c = (section: string, line = 0) => cues.find((q) => q.section === section && q.line === line)?.start ?? 0;
-  const next = (section: string) => {
-    const later = cues.filter((q) => q.section > section && q.start !== null);
-    return later.length ? Math.min(...later.map((q) => q.start!)) - 0.2 : end;
-  };
+  const { c, next } = cueTimes(cues, end);
   const pop = (at: number) => spring({ frame: frame - at * fps, fps, config: { damping: 15 } });
   const on = (at: number) => t >= at;
   const portrait = usePortrait();

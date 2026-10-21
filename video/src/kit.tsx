@@ -51,3 +51,36 @@ export const Stage = ({ episode, shake = 0, children }: { episode: string; shake
     </AbsoluteFill>
   );
 };
+
+/** A bordered card in the lab-bench style. */
+export const Panel = ({ children, color = C.ink, style }: { children: React.ReactNode; color?: string; style?: React.CSSProperties }) => (
+  <div style={{ border: `2px solid ${color}`, background: '#fbfbf9', padding: '18px 24px', ...style }}>{children}</div>
+);
+
+/** A full-frame scene visible from `from` to `to` seconds, fading in and out. */
+export const Scene = ({ t, from, to, children, style }: { t: number; from: number; to: number; children: React.ReactNode; style?: React.CSSProperties }) =>
+  t < from - 0.1 || t > to + 0.1 ? null : (
+    <AbsoluteFill style={{ opacity: fade(t, from, to), justifyContent: 'center', padding: '96px 96px 72px', ...style }}>{children}</AbsoluteFill>
+  );
+
+
+// Line timings come from the narration (public/audio/ep-NN.cues.json, written by scripts/tts.mjs).
+export interface Cue {
+  section: string;
+  line: number;
+  start: number | null;
+  end: number | null;
+}
+export interface EpisodeProps {
+  cues: Cue[];
+  hasAudio: boolean;
+}
+
+/** c('05', 3) = when line 3 of section 05 starts; next('05') = just before section 06 starts (or the end). */
+export const cueTimes = (cues: Cue[], end: number) => ({
+  c: (section: string, line = 0) => cues.find((q) => q.section === section && q.line === line)?.start ?? 0,
+  next: (section: string) => {
+    const later = cues.filter((q) => q.section > section && q.start !== null);
+    return later.length ? Math.min(...later.map((q) => q.start!)) - 0.2 : end;
+  },
+});
